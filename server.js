@@ -19,6 +19,12 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json()); // For parsing application/json
 
+app.use((req, res, next) => {
+    const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    console.log(`Client IP: ${clientIp}`);
+    next();
+  });
+
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
@@ -29,4 +35,4 @@ app.use('/api', router.get('/' ,(req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on por  ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
