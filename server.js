@@ -9,6 +9,8 @@ const articleRoutes = require('./routes/articleRoutes');
 
 const app = express();
 
+const router = express.Router();
+
 // Connect to DB
 connectDB();
 
@@ -20,8 +22,11 @@ app.use(express.json()); // For parsing application/json
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api', router.get('/' ,(req, res) => {
+    return res.json({ api: 'Please use my api for getting articles!'});
+}))
 
 
 // Start server
-const PORT = process.env.PORT || 5004;
-app.listen(PORT, () => console.log(`Server running on port ...  ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on por  ${PORT}`));
