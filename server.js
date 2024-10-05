@@ -32,7 +32,6 @@ app.use('/api', router.get('/' ,(req, res) => {
     return res.json({ api: 'Please use my api for getting articles!'});
 }))
 
-
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

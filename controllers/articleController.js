@@ -5,11 +5,9 @@ const User = require('../models/User');
 exports.createArticle = async (req, res) => {
   const { title, content, author, tags, status } = req.body;
 
-  try {
-    console.log('hello', author);
-    
+  try {    
     const existingUser = await User.findById(author);
-    console.log('hello 2');
+
     if (!existingUser) {
       return res.status(400).json({ msg: 'Author not found in the database' });
     }
@@ -123,7 +121,7 @@ exports.updateArticle = async (req, res) => {
     }
 
     // Set the user who is updating the article
-    updatedFields.updatedBy = req.user.id;  // Get the user ID from the JWT middleware
+    updatedFields.updatedBy = req.user._id;  // Get the user ID from the JWT middleware
 
     article = await Article.findByIdAndUpdate(
       req.params.id,
