@@ -4,6 +4,7 @@ const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const helmet = require('helmet');
+const listRoutes = require('./utils/listRoutes');
 const userRoutes = require('./routes/userRoutes');
 const articleRoutes = require('./routes/articleRoutes');
 
@@ -30,7 +31,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api', router.get('/' ,(req, res) => {
     return res.json({ api: 'Please use my api for getting articles!'});
-}))
+}));
+app.get('/routes', (req, res) => {
+  const allRoutes = listRoutes(app);
+  res.json(allRoutes);
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;

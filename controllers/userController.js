@@ -127,11 +127,21 @@ exports.getUserDetails = async (req, res) => {
 
 exports.logoutUser = async (req, res) => {
     const { refreshToken } = req.body;
-
-    // Remove the refresh token from the store
-    refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+    
+    // Check if refreshToken is provided
+    if (!refreshToken) {
+      return res.status(400).json({ message: 'Refresh token is required for logout!' });
+    }
   
-    res.status(200).json({ message: 'Logged out successfully' });
+    // Delete the refresh token from the database
+    const token = await RefreshToken.findOneAndDelete({ token: refreshToken });
+
+    if (!token) {
+        return res.status(400).json({ message: 'Provided refresh token is not exist!' });
+    }
+    console.log('token', token);
+    // You could also clear httpOnly cookies if refresh tokens are stored in cookies
+    res.status(200).json({ message: 'Successfully logged out!' });
 }
 
   
