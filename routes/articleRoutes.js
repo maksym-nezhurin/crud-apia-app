@@ -1,13 +1,15 @@
-const express = require('express');
-const {
+import express from 'express';
+
+import {
   createArticle,
   getArticles,
   getArticleById,
   updateArticle,
   deleteArticle,
   updateArticleStatus,
-} = require('../controllers/articleController');
-const auth = require('../middleware/auth');  // Assuming you want to protect some routes
+} from '../controllers/articleController';
+import auth from '../middleware/auth';  // Assuming you want to protect some routes
+
 const router = express.Router();
 
 // Route to create a new article
@@ -28,4 +30,4 @@ router.patch('/:id/status', auth, updateArticleStatus);  // PATCH for partial up
 // Route to delete an article by ID
 router.delete('/:id', auth, deleteArticle);
 
-module.exports = router;
+export default router;

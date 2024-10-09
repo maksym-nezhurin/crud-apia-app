@@ -1,37 +1,46 @@
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import listRoutes from './utils/listRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import articleRoutes from './routes/articleRoutes.js';
+import {connectDB} from './config/db.js'; // Assuming you have a connectDB function in config/db.js
+import dotenv from 'dotenv';
 
-const express = require('express');
-const connectDB = require('./config/db');
-const cors = require('cors');
-const helmet = require('helmet');
-const listRoutes = require('./utils/listRoutes');
-const userRoutes = require('./routes/userRoutes');
-const articleRoutes = require('./routes/articleRoutes');
+dotenv.config();
 
 const app = express();
-
 const router = express.Router();
 
-// Connect to DB
+// Connect to DB 
 connectDB();
 
-// Middleware
 app.use(cors());
+// Middleware
 app.use(helmet());
-app.use(express.json()); // For parsing application/json
+app.use((res, req, next) => {
+    req.setHeader("Access-Control-Allow-Origin", "*11");
+    next();
+})
+app.use(express.json({
+    limit: '10mb'
+})); // For parsing application/json
 
 app.use((req, res, next) => {
-    const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log(`Client IP: ${clientIp}`);
-    next();
-  });
+    console.log(req);
+  const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log(`Client IP: ${clientIp}`);
+  next();
+});
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
-app.use('/api', router.get('/' ,(req, res) => {
-    return res.json({ api: 'Please use my api for getting articles!'});
+
+app.use('/api', router.get('/', (req, res) => {
+  return res.json({ api: 'Please use my api for getting articles!' });
 }));
+
 app.get('/routes', (req, res) => {
   const allRoutes = listRoutes(app);
   res.json(allRoutes);

@@ -1,8 +1,8 @@
-const Article = require('../models/Article');
-const User = require('../models/User');
+import Article from '../models/Article';
+import User from '../models/User';
 
 // CREATE a new article
-exports.createArticle = async (req, res) => {
+export const createArticle = async (req, res) => {
   const { title, content, author, tags, status } = req.body;
 
   try {    
@@ -28,7 +28,7 @@ exports.createArticle = async (req, res) => {
   }
 };
 
-exports.updateArticleStatus = async (req, res) => {
+export const updateArticleStatus = async (req, res) => {
   const { status } = req.body;  // Get the new status from the request body
   const validStatuses = ['draft', 'published', 'archived'];  // Define valid statuses
 
@@ -60,7 +60,7 @@ exports.updateArticleStatus = async (req, res) => {
 };
 
 // READ: Get all articles or filtered by query (e.g., only published)
-exports.getArticles = async (req, res) => {
+export const getArticles = async (req, res) => {
   try {
     let query = { isDeleted: false };  // Only show articles that are not deleted
 
@@ -78,7 +78,7 @@ exports.getArticles = async (req, res) => {
 };
 
 // READ: Get a single article by ID
-exports.getArticleById = async (req, res) => {
+export const getArticleById = async (req, res) => {
   try {
     const article = await Article.findById(req.params.id).populate('author', 'name email');
 
@@ -102,7 +102,7 @@ exports.getArticleById = async (req, res) => {
 };
 
 // UPDATE an article
-exports.updateArticle = async (req, res) => {
+export const updateArticle = async (req, res) => {
   const { title, content, tags, status, publishedAt } = req.body;
 
   // Build updated article fields
@@ -140,7 +140,7 @@ exports.updateArticle = async (req, res) => {
 };
 
 // DELETE an article
-exports.deleteArticle = async (req, res) => {
+export const deleteArticle = async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
 

@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const TOKEN_TIME = '30s'; // token expires in
 const REFRESH_TOKEN_TIME = '7d'; // Refresh token expires in 7 days
 
-exports.registerUser = async (req, res) => {
+export const registerUser = async (req, res) => {
   const { name, email, role, password } = req.body;
 
   try {
@@ -42,7 +42,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-exports.loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
       // Find user by email
@@ -83,7 +83,7 @@ exports.loginUser = async (req, res) => {
     });
 }
 
-exports.refreshToken = async (req, res) => {
+export const refreshToken = async (req, res) => {
     try {
         const { refreshToken } = req.body;
 
@@ -116,7 +116,7 @@ exports.refreshToken = async (req, res) => {
     }
 }
 
-exports.getUserDetails = async (req, res) => {
+export const getUserDetails = async (req, res) => {
     try {
       const user = await User.findById(req.user.id).select('-password');
       res.json(user);
@@ -125,7 +125,7 @@ exports.getUserDetails = async (req, res) => {
     }
   };
 
-exports.logoutUser = async (req, res) => {
+export const logoutUser = async (req, res) => {
     const { refreshToken } = req.body;
     
     // Check if refreshToken is provided
