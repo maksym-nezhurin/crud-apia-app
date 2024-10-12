@@ -6,6 +6,8 @@ import userRoutes from './routes/userRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
 import {connectDB} from './config/db.js'; // Assuming you have a connectDB function in config/db.js
 import dotenv from 'dotenv';
+const http = require('http');
+import { Server } from 'socket.io';
 
 dotenv.config();
 
@@ -18,16 +20,20 @@ connectDB();
 app.use(cors());
 // Middleware
 app.use(helmet());
-app.use((res, req, next) => {
-    req.setHeader("Access-Control-Allow-Origin", "*11");
-    next();
-})
+// app.use((res, req, next) => {
+//     req.setHeader("Access-Control-Allow-Origin", "*");
+//     next();
+// })
 app.use(express.json({
     limit: '10mb'
 })); // For parsing application/json
 
 app.use((req, res, next) => {
-    console.log(req);
+    req.io = io;  // Attach `io` to the request object
+    next();
+});
+
+app.use((req, res, next) => {
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   console.log(`Client IP: ${clientIp}`);
   next();
@@ -46,6 +52,26 @@ app.get('/routes', (req, res) => {
   res.json(allRoutes);
 });
 
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:5173', // Frontend URL
+        methods: ['GET', 'POST'],
+    },
+  });
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+  
+    // Handle Socket.IO events here if needed
+  
+    socket.on('disconnect', () => {
+      console.log('A user disconnected');
+    });
+  });
+
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

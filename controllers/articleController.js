@@ -1,5 +1,6 @@
 import Article from '../models/Article';
 import User from '../models/User';
+import Comment from '../models/Comment';
 
 // CREATE a new article
 export const createArticle = async (req, res) => {
@@ -170,3 +171,57 @@ export const deleteArticle = async (req, res) => {
   }
 };
 
+export const getAllComments = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).send('Article not found');
+    }
+
+    const comments = await Comment.find({ article: id });
+
+    if (!comments.length) {
+      return res.status(404).send('Article does not has any comments');
+    }
+
+    res.status(200).send(comments);
+  } catch (error) {
+    res.status(500).send(error.message)
+  }
+}
+
+// Add comment to the article
+export const commentArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.user;
+    const { content } = req.body;
+    const article = await Article.findById(id);
+
+    if (!article) {
+      return res.status(404).send('Article not found');
+    }
+
+    const newComment = new Comment({
+      article: id,
+      user: userId,
+      content
+    });
+
+    await newComment.save();
+
+    article.comments.push(newComment._id);
+    await article.save();
+
+    console.log('newComment', newComment);
+    // Emit the comment to all clients via Socket.IO
+    req.io.emit('comment-added', newComment);
+
+    res.status(201).send(newComment);
+  } catch (error) {
+    res.status(500).send(error.message)
+  }
+};

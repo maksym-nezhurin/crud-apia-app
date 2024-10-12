@@ -48,6 +48,7 @@ const ArticleSchema = new mongoose.Schema({
     type: Date,
     default: null,  // Store the deletion timestamp
   },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Article', ArticleSchema);

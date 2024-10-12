@@ -3,7 +3,7 @@ const RefreshToken = require('../models/RefreshToken');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const TOKEN_TIME = '30s'; // token expires in
+const TOKEN_TIME = '1h'; // token expires in
 const REFRESH_TOKEN_TIME = '7d'; // Refresh token expires in 7 days
 
 export const registerUser = async (req, res) => {
@@ -80,6 +80,7 @@ export const loginUser = async (req, res) => {
     res.json({
         accessToken,
         refreshToken,
+        userId: user._id
     });
 }
 
@@ -118,7 +119,8 @@ export const refreshToken = async (req, res) => {
 
 export const getUserDetails = async (req, res) => {
     try {
-      const user = await User.findById(req.user.id).select('-password');
+      const user = await User.findById(req.user.id);
+      console.log('user', user);
       res.json(user);
     } catch (err) {
       res.status(500).send(error);

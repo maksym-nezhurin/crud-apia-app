@@ -7,6 +7,8 @@ import {
   updateArticle,
   deleteArticle,
   updateArticleStatus,
+  commentArticle,
+  getAllComments
 } from '../controllers/articleController';
 import auth from '../middleware/auth';  // Assuming you want to protect some routes
 
@@ -29,5 +31,9 @@ router.patch('/:id/status', auth, updateArticleStatus);  // PATCH for partial up
 
 // Route to delete an article by ID
 router.delete('/:id', auth, deleteArticle);
+
+router.post('/:id/comments', auth, commentArticle);
+
+router.get('/:id/comments', auth, getAllComments)
 
 export default router;
