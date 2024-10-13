@@ -1,5 +1,5 @@
 import User from '../models/User.mjs';
-import RefreshToken from '../models/User.mjs';
+import RefreshToken from '../models/RefreshToken.mjs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -45,43 +45,48 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
-      // Find user by email
-    const user = await User.findOne({ email });
-    
-    if (!user) {
-        return res.status(401).json({ message: 'Email is wrong' });
+    try {
+        // Find user by email
+      const user = await User.findOne({ email });
+
+      if (!user) {
+          return res.status(401).json({ message: 'Email is wrong' });
+      }
+
+      // Check if password is correct
+      const isPasswordValid = bcrypt.compareSync(password, user.password);
+
+      if (!isPasswordValid) {
+          return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      const accessToken = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+          expiresIn: TOKEN_TIME,  // Access token expires in 15 minutes
+      });
+
+      // Generate refresh token (long-lived)
+      const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, {
+          expiresIn: REFRESH_TOKEN_TIME
+      });
+
+      // Store the refresh token in MongoDB
+      const newRefreshToken = new RefreshToken({
+          token: refreshToken,
+          userId: user._id,
+      });
+      console.log('refreshToken after save', refreshToken);
+      await newRefreshToken.save();
+      
+      // Send tokens to the client
+      res.json({
+          accessToken,
+          refreshToken,
+          userId: user._id
+      });
+    } catch(error) {
+      console.error(error.message);
+      res.status(500).send(error.message);
     }
-
-    // Check if password is correct
-    const isPasswordValid = bcrypt.compareSync(password, user.password);
-
-    if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    const accessToken = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: TOKEN_TIME,  // Access token expires in 15 minutes
-    });
-
-    // Generate refresh token (long-lived)
-    const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET, {
-        expiresIn: REFRESH_TOKEN_TIME
-    });
-
-
-    // Store the refresh token in MongoDB
-    const newRefreshToken = new RefreshToken({
-        token: refreshToken,
-        userId: user._id,
-    });
-    await newRefreshToken.save();
-
-    // Send tokens to the client
-    res.json({
-        accessToken,
-        refreshToken,
-        userId: user._id
-    });
 }
 
 export const refreshToken = async (req, res) => {

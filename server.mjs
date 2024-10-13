@@ -25,9 +25,7 @@ app.use(helmet());
 //     req.setHeader("Access-Control-Allow-Origin", "*");
 //     next();
 // })
-app.use(express.json({
-    limit: '10mb'
-})); // For parsing application/json
+app.use(express.json()); // For parsing application/json
 
 app.use((req, res, next) => {
     req.io = io;  // Attach `io` to the request object
@@ -41,7 +39,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api', router.get('/', (req, res) => {
   return res.json({ api: 'Please use my api for getting articles!' });
