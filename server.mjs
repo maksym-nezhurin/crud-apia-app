@@ -18,9 +18,9 @@ const router = express.Router();
 // Connect to DB 
 connectDB();
 
-app.use(cors({
-  origin: 'https://maksym-nezhurin.github.io'
-}));
+// app.use(cors({
+//   origin: 'https://maksym-nezhurin.github.io'
+// }));
 // Middleware
 app.use(helmet());
 // app.use((res, req, next) => {
@@ -56,10 +56,10 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO
 const io = new Server(server, {
-    cors: {
-        origin: 'https://maksym-nezhurin.github.io',
-        methods: ['GET', 'POST'],
-    },
+    // cors: {
+    //     origin: 'https://maksym-nezhurin.github.io',
+    //     methods: ['GET', 'POST'],
+    // },
   });
 
 io.on('connection', (socket) => {
