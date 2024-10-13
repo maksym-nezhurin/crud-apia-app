@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const ArticleSchema = new mongoose.Schema({
   title: {
@@ -51,4 +52,4 @@ const ArticleSchema = new mongoose.Schema({
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
 }, { timestamps: true });
 
-module.exports = mongoose.model('Article', ArticleSchema);
+export default mongoose.model('Article', ArticleSchema);

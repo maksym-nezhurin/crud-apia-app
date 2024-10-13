@@ -9,8 +9,8 @@ import {
   updateArticleStatus,
   commentArticle,
   getAllComments
-} from '../controllers/articleController';
-import auth from '../middleware/auth';  // Assuming you want to protect some routes
+} from '../controllers/articleController.mjs';
+import auth from '../middleware/auth.mjs';  // Assuming you want to protect some routes
 
 const router = express.Router();
 

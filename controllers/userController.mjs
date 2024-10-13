@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const RefreshToken = require('../models/RefreshToken');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+import User from '../models/User.mjs';
+import RefreshToken from '../models/User.mjs';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 const TOKEN_TIME = '1h'; // token expires in
 const REFRESH_TOKEN_TIME = '7d'; // Refresh token expires in 7 days

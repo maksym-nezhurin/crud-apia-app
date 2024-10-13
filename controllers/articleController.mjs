@@ -1,6 +1,6 @@
-import Article from '../models/Article';
-import User from '../models/User';
-import Comment from '../models/Comment';
+import Article from '../models/Article.mjs';
+import User from '../models/User.mjs';
+import Comment from '../models/Comment.mjs';
 
 // CREATE a new article
 export const createArticle = async (req, res) => {

@@ -2,12 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import listRoutes from './utils/listRoutes.js';
-import userRoutes from './routes/userRoutes.js';
+
 import articleRoutes from './routes/articleRoutes.js';
 import {connectDB} from './config/db.js'; // Assuming you have a connectDB function in config/db.js
 import dotenv from 'dotenv';
-const http = require('http');
+import http from 'http';
 import { Server } from 'socket.io';
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -40,9 +41,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/users', userRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/articles', articleRoutes);
-
 app.use('/api', router.get('/', (req, res) => {
   return res.json({ api: 'Please use my api for getting articles!' });
 }));

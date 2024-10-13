@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const RefreshTokenSchema = new mongoose.Schema({
   token: {
@@ -14,4 +14,4 @@ const RefreshTokenSchema = new mongoose.Schema({
     expires: '7d' },  // Automatically delete after 7 days
 });
 
-module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);
+export default mongoose.model('RefreshToken', RefreshTokenSchema);
