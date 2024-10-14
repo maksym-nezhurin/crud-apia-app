@@ -11,3 +11,7 @@ In this application you can do next actions:
 - devete the article.
 
 Regards!
+
+ heroku login  - login to HEROKU
+heroku ps:scale web=0  
+heroku ps:scale web=1
