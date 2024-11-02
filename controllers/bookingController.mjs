@@ -6,9 +6,7 @@ import Slot from '../models/Slot.mjs';
 export const createBooking = async (req, res) => {
     try {
         const { slotId, timezone, firstName, lastName } = req.body;
-        // Find the slot by ID and ensure it is not already booked
         const slot = await Slot.findOne({ _id: slotId, isBooked: false });
-        console.log('slot data', slot);
         const dateFromSlot = new Date(slot.date);
 
         // Get YYYY-MM-DD format
@@ -58,7 +56,7 @@ export const getBookingByDate = async (req, res) => {
         startDate.setUTCHours(0, 0, 0, 0);  // Set start of the day
         const endDate = new Date(date);
         endDate.setUTCHours(23, 59, 59, 999);  // Set end of the day
-        console.log('startDate', startDate, endDate)
+
         const bookings = await Booking.find({
             date: { $gte: startDate, $lt: endDate },
             // isDeleted: false
@@ -90,7 +88,7 @@ export const updateBooking = async (req, res) => {
 
 export const deleteBooking = async (req, res) => {
     const { id } = req.params;
-    console.log('rid', id)
+
     try {
         // Find the booking by ID
         const booking = await Booking.findById(id);

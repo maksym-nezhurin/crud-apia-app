@@ -24,7 +24,6 @@ export const createArticle = async (req, res) => {
     await newArticle.save();
     res.status(201).json(newArticle);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send(err.message);
   }
 };
@@ -52,7 +51,6 @@ export const updateArticleStatus = async (req, res) => {
 
     res.json(article);  // Respond with the updated article
   } catch (err) {
-    console.error(err.message);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ msg: 'Article not found' });
     }
@@ -87,7 +85,6 @@ export const getArticleById = async (req, res) => {
       return res.status(404).json({ msg: 'Article not found' });
     }
 
-    // If the article is deleted and the user is not a super admin, block access
     if (article.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
       return res.status(403).json({ msg: 'Access denied. Article is deleted.' });
     }
@@ -132,7 +129,6 @@ export const updateArticle = async (req, res) => {
 
     res.json(article);
   } catch (err) {
-    console.error(err.message);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ msg: 'Article not found' });
     }

@@ -1,11 +1,13 @@
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const CLARIFAI_API_KEY = 'f3e567daca3c4ff08c333934ac12faec';
 const PAT = '14b5738445b9425d8caea770964caf04';    
 const USER_ID = 'openai';
 const APP_ID = 'dall-e';
-const MODEL_ID = 'dall-e-3';
-const MODEL_VERSION_ID = 'dc9dcb6ee67543cebc0b9a025861b868';
+const API_URL = `${process.env.CLARIFAI_URL}/${process.env.MODEL_ID}/versions/${process.env.MODEL_VERSION_ID}/outputs`
 
 export const createImage = async (req, res) => {
   const { tag } = req.body;
@@ -13,10 +15,10 @@ export const createImage = async (req, res) => {
   if (!tag) {
     return res.status(400).json({ error: 'Tag is required' });
   }
-
+  // process.env.CLARIFAI_URL;
   try {
     const response = await axios.post(
-      `https://api.clarifai.com/v2/models/${MODEL_ID}/versions/${MODEL_VERSION_ID}/outputs`,
+        API_URL,
       {
         user_app_id: {
           user_id: USER_ID,
@@ -34,15 +36,12 @@ export const createImage = async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Key ${PAT}`,
+          Authorization: `Key ${process.env.PAT}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       }
     );
-
-    console.log('response.data', response.data.outputs[0]?.data.image.base64);
-    
 
     // Check if response contains the generated image URL
     const generatedImageUrl = response.data.outputs[0]?.data?.image?.base64;

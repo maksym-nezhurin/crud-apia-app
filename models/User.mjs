@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserRoles = ['user', 'super admin'];
+const UserRoles = ['user', 'super admin', 'admin'];
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -21,6 +21,10 @@ const UserSchema = new mongoose.Schema({
     enum: UserRoles,
     default: 'user',  // Default role is regular user
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 }, { timestamps: true });
 
 export default mongoose.model('User', UserSchema);

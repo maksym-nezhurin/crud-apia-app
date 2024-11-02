@@ -125,7 +125,7 @@ export const refreshToken = async (req, res) => {
 export const getUserDetails = async (req, res) => {
     try {
       const user = await User.findById(req.user.id);
-      console.log('user', user);
+
       res.json(user);
     } catch (err) {
       res.status(500).send(error);
@@ -146,7 +146,7 @@ export const logoutUser = async (req, res) => {
     if (!token) {
         return res.status(400).json({ message: 'Provided refresh token is not exist!' });
     }
-    console.log('token', token);
+
     // You could also clear httpOnly cookies if refresh tokens are stored in cookies
     res.status(200).json({ message: 'Successfully logged out!' });
 }
