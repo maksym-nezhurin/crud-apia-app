@@ -26,6 +26,7 @@
     "moment-timezone": "^0.5.46",
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.0",
+    "newsapi": "^2.4.1",
     "socket.io": "^4.8.0"
   },
   "devDependencies": {
@@ -35,6 +36,6 @@
     "nodemon": "^3.1.7"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.11.x"
   }
 }

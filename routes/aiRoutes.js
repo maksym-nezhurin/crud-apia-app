@@ -4,8 +4,6 @@ import auth from '../middleware/auth.mjs';  // Assuming you want to protect some
 
 const router = express.Router();
 
-// router.post('/generate-image', auth, createImage);
-
 router.post('/generate-image', createImage);
 
 export default router;

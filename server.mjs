@@ -5,6 +5,7 @@ import listRoutes from './utils/listRoutes.js';
 import bodyParser from 'body-parser';
 import articleRoutes from './routes/articleRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import { getLatestNews } from './controllers/newsController.mjs';
 import aiRoutes from './routes/aiRoutes.js';
 import slotRoutes from './routes/slotRoutes.js'
 import {connectDB} from './database/connection.mjs'; // Assuming you have a connectDB function in config/db.js
@@ -50,6 +51,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/forms/booking', bookingRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/ai', aiRoutes);
+app.get('/api/news', getLatestNews);
 
 app.use('/api', router.get('/', (req, res) => {
   return res.json({ api: 'Please use my api for getting articles!' });
