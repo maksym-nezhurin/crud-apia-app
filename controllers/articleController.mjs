@@ -216,7 +216,6 @@ export const commentArticle = async (req, res) => {
     article.comments.push(newComment._id);
     await article.save();
 
-    console.log('newComment', newComment);
     // Emit the comment to all clients via Socket.IO
     req.io.emit('comment-added', newComment);
 

@@ -12,6 +12,10 @@ In this application you can do next actions:
 
 Regards!
 
- heroku login  - login to HEROKU
+heroku login  - login to HEROKU
 heroku ps:scale web=0  
 heroku ps:scale web=1
+
+heroku ps
+
+heroku --help

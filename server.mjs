@@ -2,9 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import listRoutes from './utils/listRoutes.js';
-
+import bodyParser from 'body-parser';
 import articleRoutes from './routes/articleRoutes.js';
-import {connectDB} from './config/db.js'; // Assuming you have a connectDB function in config/db.js
+import bookingRoutes from './routes/bookingRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+import slotRoutes from './routes/slotRoutes.js'
+import {connectDB} from './database/connection.mjs'; // Assuming you have a connectDB function in config/db.js
 import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -20,6 +23,8 @@ connectDB();
 
 app.use(cors());
 // Middleware
+app.use(bodyParser.json()); // Parses JSON requests
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 app.use((res, req, next) => {
     req.setHeader("Access-Control-Allow-Origin", "*");
@@ -32,6 +37,7 @@ app.use((req, res, next) => {
     next();
 });
 
+
 app.use((req, res, next) => {
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   console.log(`Client IP: ${clientIp}`);
@@ -41,6 +47,10 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/forms/booking', bookingRoutes);
+app.use('/api/slots', slotRoutes);
+app.use('/api/ai', aiRoutes);
+
 app.use('/api', router.get('/', (req, res) => {
   return res.json({ api: 'Please use my api for getting articles!' });
 }));
