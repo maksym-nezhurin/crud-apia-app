@@ -4,25 +4,28 @@ import Comment from '../models/Comment.mjs';
 
 // CREATE a new article
 export const createArticle = async (req, res) => {
-  const { title, content, author, tags, status } = req.body;
+  const { title, content, tags, status = 'draft'} = req.body;
 
-  try {    
-    const existingUser = await User.findById(author);
+  try {
+    const existingUser = await User.findById(req.user.userId);
 
     if (!existingUser) {
-      return res.status(400).json({ msg: 'Author not found in the database' });
+      return res.status(400).json({ message: 'Author not found in the database' });
     }
 
     const newArticle = new Article({
       title,
       content,
-      author,
+      author: existingUser?._id,
       tags,
       status: status || 'draft',  // Default to draft if no status is provided
     });
 
     await newArticle.save();
-    res.status(201).json(newArticle);
+    res.status(201).json({ data: {
+        article: newArticle,
+        message: 'Article successfully added!'
+      }});
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -37,12 +40,12 @@ export const updateArticleStatus = async (req, res) => {
     const article = await Article.findById(req.params.id);
 
     if (!article) {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
 
     // Validate the new status
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ msg: 'Invalid status' });
+      return res.status(400).json({ message: 'Invalid status' });
     }
 
     // Update the status
@@ -52,7 +55,7 @@ export const updateArticleStatus = async (req, res) => {
     res.json(article);  // Respond with the updated article
   } catch (err) {
     if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
     res.status(500).send('Server error');
   }
@@ -82,18 +85,18 @@ export const getArticleById = async (req, res) => {
     const article = await Article.findById(req.params.id).populate('author', 'name email');
 
     if (!article) {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
 
     if (article.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
-      return res.status(403).json({ msg: 'Access denied. Article is deleted.' });
+      return res.status(403).json({ message: 'Access denied. Article is deleted.' });
     }
 
     res.json(article);
   } catch (err) {
     console.error(err.message);
     if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
     res.status(500).send('Server error');
   }
@@ -115,7 +118,7 @@ export const updateArticle = async (req, res) => {
     let article = await Article.findById(req.params.id);
 
     if (!article) {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
 
     // Set the user who is updating the article
@@ -130,7 +133,7 @@ export const updateArticle = async (req, res) => {
     res.json(article);
   } catch (err) {
     if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
     res.status(500).send('Server error');
   }
@@ -142,12 +145,12 @@ export const deleteArticle = async (req, res) => {
     const article = await Article.findById(req.params.id);
 
     if (!article) {
-      return res.status(404).json({ msg: 'Article not found' });
+      return res.status(404).json({ message: 'Article not found' });
     }
 
     // Check if the article is already marked as deleted
     if (article.isDeleted) {
-      return res.status(400).json({ msg: 'Article is already deleted' });
+      return res.status(400).json({ message: 'Article is already deleted' });
     }
 
     // Mark the article as deleted
@@ -177,7 +180,7 @@ export const getAllComments = async (req, res) => {
       return res.status(404).send('Article not found');
     }
 
-    const comments = await Comment.find({ article: id });
+    const comments = await Comment.find({ article: id }).sort({ createdAt: -1 });
 
     if (!comments.length) {
       return res.status(404).send('Article does not has any comments');
@@ -194,7 +197,7 @@ export const commentArticle = async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.user;
-    const { content } = req.body;
+    const { comment } = req.body;
     const article = await Article.findById(id);
 
     if (!article) {
@@ -204,7 +207,7 @@ export const commentArticle = async (req, res) => {
     const newComment = new Comment({
       article: id,
       user: userId,
-      content
+      content: comment
     });
 
     await newComment.save();
@@ -215,7 +218,10 @@ export const commentArticle = async (req, res) => {
     // Emit the comment to all clients via Socket.IO
     req.io.emit('comment-added', newComment);
 
-    res.status(201).send(newComment);
+    res.status(201).send({data: {
+        comment: newComment,
+        message: 'Comment successfully added!'
+      }});
   } catch (error) {
     res.status(500).send(error.message)
   }

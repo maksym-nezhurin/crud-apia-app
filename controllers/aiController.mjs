@@ -13,7 +13,7 @@ export const createImage = async (req, res) => {
   if (!tag) {
     return res.status(400).json({ error: 'Tag is required' });
   }
-  // process.env.CLARIFAI_URL;
+
   try {
     const response = await axios.post(
         API_URL,
@@ -50,7 +50,15 @@ export const createImage = async (req, res) => {
       res.status(500).json({ error: 'Image could not be generated' });
     }
   } catch (error) {
-    console.error('Error generating image:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Could not generate image, please connect to admin!' });
+    if (error.response) {
+      // Forward the API's status code and message
+      res.status(error.response.status).json({
+        message: error.response.data.status.description + ': ' + error.response.statusText,
+        details: error.response.data
+      });
+    } else {
+      // General server error (no response from API or network issue)
+      res.status(503).json({ message: 'Image generation service unavailable. Please try again later.' });
+    }
   }
 };

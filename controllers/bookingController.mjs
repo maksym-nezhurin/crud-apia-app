@@ -30,7 +30,7 @@ export const createBooking = async (req, res) => {
             lastName,
         });
         await booking.save();
-        res.status(201).json({ message: 'Slot booked successfully', booking });
+        res.status(201).json({ data: { message: 'Slot booked successfully', booking }});
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
