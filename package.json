@@ -27,6 +27,7 @@
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.0",
     "newsapi": "^2.4.1",
+    "nodemailer": "^6.9.16",
     "socket.io": "^4.8.0"
   },
   "devDependencies": {
