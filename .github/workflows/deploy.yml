@@ -17,9 +17,8 @@ jobs:
         with:
           node-version: '16.x'
 
-      - run: npm install
-
-      - run: npm run build # Optional: Only if your app has a build step
+      - name: Install Dependencies
+        run: npm install
 
       - name: Set up Heroku
         env:
