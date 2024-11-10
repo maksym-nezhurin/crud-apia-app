@@ -24,7 +24,13 @@ const UserSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  resetCode: {
+    type: String
+  },
+  resetCodeExpiration: {
+    type: Date
+  },
 }, { timestamps: true });
 
 export default mongoose.model('User', UserSchema);

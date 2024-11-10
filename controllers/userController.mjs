@@ -2,6 +2,7 @@ import User from '../models/User.mjs';
 import RefreshToken from '../models/RefreshToken.mjs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import nodemailer from 'nodemailer';
 
 const TOKEN_TIME = '1h'; // token expires in
 const REFRESH_TOKEN_TIME = '7d'; // Refresh token expires in 7 days
@@ -160,4 +161,127 @@ export const logoutUser = async (req, res) => {
     res.status(200).json({message: 'Successfully logged out!'});
 }
 
-  
+export const resetPassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ message: 'Password has been reset successfully.' });
+    } catch (error) {
+        res.status(400).json({ message: 'Invalid or expired token' });
+    }
+};
+
+// Helper function to generate a 6-digit code
+const generateResetCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+export const requestPasswordResetCode = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Generate a 6-digit reset code
+        const resetCode = generateResetCode();
+        const expirationTime = Date.now() + 10 * 60 * 1000; // Code expires in 10 minutes
+
+        // Store the reset code and expiration time in the user's document
+        user.resetCode = resetCode;
+        user.resetCodeExpiration = expirationTime;
+
+        await user.save();
+
+        // Send email with the code
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.sendgrid.net',
+            port: 587,
+            auth: {
+                user: 'apikey', // В SendGrid це завжди "apikey"
+                pass: process.env.SENDGRID_API_KEY, // використовуйте API Key з .env
+            },
+        });
+
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL,
+                to: email,
+                subject: 'Your Password Reset Code',
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                        <h2 style="color: #4CAF50;">Password Reset Request</h2>
+                        <p>Hi there,</p>
+                        <p>You recently requested to reset your password. Use the code below to reset it:</p>
+                        
+                        <div style="padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; display: inline-block; font-size: 1.5em; font-weight: bold; color: #333; margin: 20px 0;">
+                            ${resetCode}
+                        </div>
+                        
+                        <p>If you prefer, you can also reset your password by clicking the button below:</p>
+                        
+                        <a href="https://maksym-nezhurin.github.io/react-app-test-crud-api-app/login/reset-password?code=${resetCode}" 
+                           style="display: inline-block; padding: 12px 25px; background-color: #4CAF50; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                           Reset Password
+                        </a>
+                        
+                        <p style="margin-top: 20px;">If you didn’t request this, you can ignore this email.</p>
+                        
+                        <p style="color: #888; margin-top: 30px;">Best regards,<br>Your Company Team</p>
+                    </div>
+                `,
+            });
+            console.log('Email successfully sent');
+        } catch (sendError) {
+            console.error('Error while sending email:', sendError);
+            return res.status(500).json({ message: 'Failed to send email' });
+        }
+
+        res.json({
+            message: `Password reset code sent to your email: ${email}.`,
+            status: "success"
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Could not process request' });
+    }
+};
+
+export const verifyResetCode = async (req, res) => {
+    const { email, resetCode, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        console.log(user.resetCode, resetCode)
+        if (!user || user.resetCode !== resetCode) {
+            return res.status(400).json({ message: 'Invalid code or email' });
+        }
+
+        if (Date.now() > user.resetCodeExpiration) {
+            return res.status(400).json({ message: 'Reset code has expired' });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+
+        // Clear the reset code and expiration after successful reset
+        user.resetCode = undefined;
+        user.resetCodeExpiration = undefined;
+
+        await user.save();
+
+        res.status(200).json({ message: 'Password has been reset successfully.'});
+    } catch (error) {
+        console.log('e', error);
+        res.status(500).json({ message: 'Could not process request' });
+    }
+};
