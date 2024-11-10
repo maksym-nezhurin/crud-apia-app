@@ -73,7 +73,7 @@ app.use('/api/forms/checkout', checkoutRoutes);
 app.get('/api/news', getLatestNews);
 
 app.use('/api', router.get('/', (req, res) => {
-  return res.json({ api: 'Please, use my api for getting articles!!!' });
+  return res.json({ api: 'Please,222 use my api for getting articles!!!' });
 }));
 
 app.get('/routes', (req, res) => {
