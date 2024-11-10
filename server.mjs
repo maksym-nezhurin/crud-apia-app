@@ -51,6 +51,7 @@ app.use((req, res, next) => {
 // Serve static files
 app.use('/uploads', express.static(join(__dirname, 'uploads')));
 // Middleware to handle missing files
+
 app.use('/uploads', (req, res) => {
     res.status(404).send('Image not found');
 });
