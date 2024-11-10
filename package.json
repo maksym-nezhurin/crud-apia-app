@@ -8,7 +8,7 @@
     "dev": "nodemon server.mjs",
     "start:prod": "NODE_ENV=production node server.mjs",
     "seed:all": "node database/seeders/globalSeeder.mjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +39,6 @@
     "nodemon": "^3.1.7"
   },
   "engines": {
-    "node": "20.11.x"
+    "node": "20.18.0"
   }
 }
