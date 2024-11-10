@@ -8,61 +8,52 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import checkoutRoutes from './routes/checkoutRoutes.js';
 import { getLatestNews } from './controllers/newsController.mjs';
 import aiRoutes from './routes/aiRoutes.js';
-import slotRoutes from './routes/slotRoutes.js'
-import {connectDB} from './database/connection.mjs'; // Assuming you have a connectDB function in config/db.js
+import slotRoutes from './routes/slotRoutes.js';
+import { connectDB } from './database/connection.mjs';
 import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
 import userRoutes from "./routes/userRoutes.js";
 import productsRoutes from "./routes/productsRoutes.js";
 import { fileURLToPath } from 'url';
-import {dirname, join} from 'path';
+import { dirname, join } from 'path';
 
 dotenv.config();
 
 const app = express();
-const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Connect to DB 
+// Connect to DB
 connectDB();
 
-app.use(cors({
-    origin: '*',
-    // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Apply CORS Middleware Early
+app.use(
+    cors({
+        origin: '*', // Replace '*' with specific origins for better security
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+    })
+);
+
+// Apply Other Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Middleware
-app.use(bodyParser.json()); // Parses JSON requests
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 
-app.use(express.json()); // For parsing application/json
+// Serve Static Files
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
+app.use('/uploads', (req, res) => res.status(404).send('Image not found'));
 
+// Log Client IP
 app.use((req, res, next) => {
-    req.io = io;  // Attach `io` to the request object
+    const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     next();
 });
 
-// Serve static files
-app.use('/uploads', express.static(join(__dirname, 'uploads')));
-// Middleware to handle missing files
-
-app.use('/uploads', (req, res) => {
-    res.status(404).send('Image not found');
-});
-
-app.use((req, res, next) => {
-  const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log(`Client IP: ${clientIp}`);
-  next();
-});
-
-// Routes
+// Define Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/forms/booking', bookingRoutes);
@@ -72,30 +63,37 @@ app.use('/api/products', productsRoutes);
 app.use('/api/forms/checkout', checkoutRoutes);
 app.get('/api/news', getLatestNews);
 
-app.use('/api', router.get('/', (req, res) => {
-  return res.json({ api: 'Please,222 use my api for getting articles!!!' });
-}));
-
-app.get('/routes', (req, res) => {
-  const allRoutes = listRoutes(app);
-  res.json(allRoutes);
+app.use('/api', (req, res) => {
+    return res.json({ api: 'Please, use my api for getting articles!!!' });
 });
 
+app.get('/routes', (req, res) => {
+    const allRoutes = listRoutes(app);
+    res.json(allRoutes);
+});
+
+// Create Server
 const server = http.createServer(app);
 
-// Initialize Socket.IO
-const io = new Server(server);
+// Setup Socket.IO
+const io = new Server(server, {
+    cors: {
+        origin: '*', // Replace '*' with specific origins for better security
+        methods: ['GET', 'POST'],
+    },
+});
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-  
-    // Handle Socket.IO events here if needed
-  
-    socket.on('disconnect', () => {
-      console.log('A user disconnected');
-    });
-  });
+    const clientIp = socket.handshake.address; // Get client IP address
+    console.log(`A user connected from IP: ${clientIp}`);
 
-// Start server
+    // Access query parameters if sent during connection
+    const queryData = socket.handshake.query;
+    console.log('Connection query data:', queryData);
+    socket.on('disconnect', () => console.log(`A user disconnected from IP: ${clientIp}`));
+});
+
+// Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
