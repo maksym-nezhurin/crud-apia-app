@@ -50,7 +50,6 @@ app.use('/uploads', (req, res) => res.status(404).send('Image not found'));
 // Log Client IP
 app.use((req, res, next) => {
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log(`Client IP: ${clientIp}`);
     next();
 });
 
