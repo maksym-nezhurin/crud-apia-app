@@ -8,7 +8,7 @@
     "dev": "nodemon server.mjs",
     "start:prod": "NODE_ENV=production node server.mjs",
     "seed:all": "node database/seeders/globalSeeder.mjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +36,7 @@
     "@babel/core": "^7.25.7",
     "@babel/node": "^7.25.7",
     "@babel/preset-env": "^7.25.7",
+    "mocha": "^10.8.2",
     "nodemon": "^3.1.7"
   },
   "engines": {
