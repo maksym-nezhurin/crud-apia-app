@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import http from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
-import { dirname, join } from 'path';
+import { join } from 'path';
 
 import { connectDB, disconnectDB } from './database/connection.mjs';
 import listRoutes from './utils/listRoutes.js';
@@ -20,9 +20,7 @@ import { getLatestNews } from './controllers/newsController.mjs';
 
 dotenv.config();
 
-// Determine __filename and __dirname based on environment
 const isTestEnv = process.env.NODE_ENV === 'test';
-const __dirname = !isTestEnv ? process.cwd() : undefined;
 
 // Initialize Express app
 export const app = express();
@@ -45,8 +43,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 
 // Serve static files
-if (!isTestEnv && __dirname) {
-    app.use('/uploads', express.static(join(__dirname, 'uploads')));
+if (!isTestEnv) {
+    app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
     app.use('/uploads', (req, res) => res.status(404).send('Image not found'));
 }
 
