@@ -84,15 +84,7 @@ app.get('/routes', (req, res) => {
 const server = http.createServer(app);
 
 // Initialize Socket.IO
-const io = new Server(server, {
-    cors: {
-        origin: [
-          'http://localhost:5173',
-          'https://maksym-nezhurin.github.io'
-        ],
-        methods: ['GET', 'POST'],
-    },
-  });
+const io = new Server(server);
 
 io.on('connection', (socket) => {
     console.log('A user connected');
