@@ -1,65 +1,60 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import listRoutes from './utils/listRoutes.js';
 import bodyParser from 'body-parser';
+import http from 'http';
+import { Server } from 'socket.io';
+import dotenv from 'dotenv';
+import { dirname, join } from 'path';
+
+import { connectDB, disconnectDB } from './database/connection.mjs';
+import listRoutes from './utils/listRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import checkoutRoutes from './routes/checkoutRoutes.js';
-import { getLatestNews } from './controllers/newsController.mjs';
 import aiRoutes from './routes/aiRoutes.js';
-import slotRoutes from './routes/slotRoutes.js'
-import {connectDB} from './database/connection.mjs'; // Assuming you have a connectDB function in config/db.js
-import dotenv from 'dotenv';
-import http from 'http';
-import { Server } from 'socket.io';
-import userRoutes from "./routes/userRoutes.js";
-import productsRoutes from "./routes/productsRoutes.js";
-import { fileURLToPath } from 'url';
-import {dirname, join} from 'path';
+import slotRoutes from './routes/slotRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import productsRoutes from './routes/productsRoutes.js';
+import { getLatestNews } from './controllers/newsController.mjs';
 
 dotenv.config();
 
-const app = express();
-const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Determine __filename and __dirname based on environment
+const isTestEnv = process.env.NODE_ENV === 'test';
+const __dirname = !isTestEnv ? process.cwd() : undefined;
 
-// Connect to DB 
-connectDB();
+// Initialize Express app
+export const app = express();
 
-app.use(cors({
-    origin: '*',
-    // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Connect to DB
+if (!isTestEnv) connectDB(); // Avoid DB connection during tests
+
+// Middleware setup
+app.use(
+    cors({
+        origin: '*', // Replace with specific origins if needed
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Middleware
-app.use(bodyParser.json()); // Parses JSON requests
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
 
-app.use(express.json()); // For parsing application/json
-
-app.use((req, res, next) => {
-    req.io = io;  // Attach `io` to the request object
-    next();
-});
-
 // Serve static files
-app.use('/uploads', express.static(join(__dirname, 'uploads')));
-// Middleware to handle missing files
+if (!isTestEnv && __dirname) {
+    app.use('/uploads', express.static(join(__dirname, 'uploads')));
+    app.use('/uploads', (req, res) => res.status(404).send('Image not found'));
+}
 
-app.use('/uploads', (req, res) => {
-    res.status(404).send('Image not found');
-});
-
+// Add IP logger middleware
 app.use((req, res, next) => {
-  const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log(`Client IP: ${clientIp}`);
-  next();
+    const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    console.log(`Client IP: ${clientIp}`);
+    next();
 });
 
 // Routes
@@ -71,39 +66,33 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/forms/checkout', checkoutRoutes);
 app.get('/api/news', getLatestNews);
+app.get('/api', (req, res) => res.json({ api: 'Please, use my api for getting articles!!!' }));
+app.get('/routes', (req, res) => res.json(listRoutes(app)));
 
-app.use('/api', router.get('/', (req, res) => {
-  return res.json({ api: 'Please,222 use my api for getting articles!!!' });
-}));
-
-app.get('/routes', (req, res) => {
-  const allRoutes = listRoutes(app);
-  res.json(allRoutes);
-});
-
+// HTTP Server and Socket.IO setup
 const server = http.createServer(app);
 
-// Initialize Socket.IO
 const io = new Server(server, {
     cors: {
-        origin: [
-          'http://localhost:5173',
-          'https://maksym-nezhurin.github.io'
-        ],
+        origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'], // Replace with actual origins
         methods: ['GET', 'POST'],
     },
-  });
+});
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-  
-    // Handle Socket.IO events here if needed
-  
-    socket.on('disconnect', () => {
-      console.log('A user disconnected');
-    });
-  });
+    socket.on('disconnect', () => console.log('A user disconnected'));
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+if (!isTestEnv) {
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// Exports for testing
+export const closeServer = () => {
+    server.close(() => console.log('Server closed'));
+    disconnectDB(); // Ensure the database connection is terminated
+};
