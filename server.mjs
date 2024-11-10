@@ -84,6 +84,17 @@ io.on('connection', (socket) => {
     console.log('A user connected');
   
     // Handle Socket.IO events here if needed
+
+    // Listen for typing event
+    socket.on('typing', (data) => {
+        socket.broadcast.emit('userTyping', data);
+    });
+
+    // Listen for stop typing event
+    socket.on('stopTyping', (data) => {
+        // Broadcast to all other users except the sender
+        socket.broadcast.emit('userStopTyping', data);
+    });
   
     socket.on('disconnect', () => {
       console.log('A user disconnected');
