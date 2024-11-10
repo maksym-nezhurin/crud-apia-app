@@ -5,6 +5,7 @@ import listRoutes from './utils/listRoutes.js';
 import bodyParser from 'body-parser';
 import articleRoutes from './routes/articleRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import checkoutRoutes from './routes/checkoutRoutes.js';
 import { getLatestNews } from './controllers/newsController.mjs';
 import aiRoutes from './routes/aiRoutes.js';
 import slotRoutes from './routes/slotRoutes.js'
@@ -13,24 +14,33 @@ import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
 import userRoutes from "./routes/userRoutes.js";
+import productsRoutes from "./routes/productsRoutes.js";
+import { fileURLToPath } from 'url';
+import {dirname, join} from 'path';
 
 dotenv.config();
 
 const app = express();
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Connect to DB 
 connectDB();
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 // Middleware
 app.use(bodyParser.json()); // Parses JSON requests
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
-app.use((res, req, next) => {
-    req.setHeader("Access-Control-Allow-Origin", "*");
-    next();
-})
+
 app.use(express.json()); // For parsing application/json
 
 app.use((req, res, next) => {
@@ -38,6 +48,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// Serve static files
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
+// Middleware to handle missing files
+app.use('/uploads', (req, res) => {
+    res.status(404).send('Image not found');
+});
 
 app.use((req, res, next) => {
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -51,6 +67,8 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/forms/booking', bookingRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/forms/checkout', checkoutRoutes);
 app.get('/api/news', getLatestNews);
 
 app.use('/api', router.get('/', (req, res) => {
