@@ -1,20 +1,31 @@
-name: Deploy to Heroku
+name: Node.js CI/CD for Heroku
 
 on:
   push:
-    branches: ["main", "master"]  # Adjust to your default branch name if needed
+    branches: [ "master" ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16.x'
+
+      - run: npm install
+
+      - run: npm run build # Optional: Only if your app has a build step
 
       - name: Set up Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          git remote add heroku https://article-api-application-53ee1404371a.herokuapp.com/
+          git remote add heroku https://git.heroku.com/article-api-application-53ee1404371a.git
           echo "machine api.heroku.com" > ~/.netrc
           echo "  login ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
           echo "  password ${HEROKU_API_KEY}" >> ~/.netrc
@@ -23,7 +34,4 @@ jobs:
           echo "  password ${HEROKU_API_KEY}" >> ~/.netrc
 
       - name: Push to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          git push heroku master
+        run: git push heroku master
