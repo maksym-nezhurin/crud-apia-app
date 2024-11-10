@@ -65,6 +65,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
+
 app.use('/api/forms/booking', bookingRoutes);
 app.use('/api/slots', slotRoutes);
 app.use('/api/ai', aiRoutes);
