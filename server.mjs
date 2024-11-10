@@ -10,6 +10,7 @@ import { Server } from 'socket.io';
 dotenv.config();
 
 const app = express();
+const router = express.Router();
 
 // Connect to DB 
 connectDB();
