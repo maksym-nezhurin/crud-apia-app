@@ -64,7 +64,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/forms/checkout', checkoutRoutes);
 app.get('/api/news', getLatestNews);
-app.get('/api', (req, res) => res.json({ api: 'Please, use my api for getting articles!!!' }));
+app.get('/api', (req, res) => res.json({ api: 'Please, use my api for getting articles!' }));
 app.get('/routes', (req, res) => res.json(listRoutes(app)));
 
 // HTTP Server and Socket.IO setup
