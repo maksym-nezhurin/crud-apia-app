@@ -18,7 +18,7 @@ jobs:
           node-version: '20.11.x'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --force
 
       - name: Set up Heroku
         env:

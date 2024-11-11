@@ -8,13 +8,14 @@
     "dev": "nodemon server.mjs",
     "start:prod": "NODE_ENV=production node server.mjs",
     "seed:all": "node database/seeders/globalSeeder.mjs",
-    "test": "jest"
+    "test": "NODE_ENV=test jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@jest/globals": "^29.7.0",
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

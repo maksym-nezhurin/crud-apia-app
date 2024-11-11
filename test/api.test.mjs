@@ -1,6 +1,19 @@
 import request from 'supertest';
 import {app, closeServer } from '../server.mjs';
 
+jest.mock("newsapi", () => {
+    return jest.fn().mockImplementation(() => ({
+        v2: {
+            topHeadlines: jest.fn().mockResolvedValue({
+                articles: [
+                    { title: "Mocked News 1", description: "Mocked Description 1" },
+                    { title: "Mocked News 2", description: "Mocked Description 2" },
+                ],
+            }),
+        },
+    }));
+});
+
 describe('API Tests', () => {
     afterAll(async () => {
         await closeServer(); // Stop the server after tests
