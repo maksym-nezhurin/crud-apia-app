@@ -32,6 +32,6 @@ jobs:
           echo "  login ${HEROKU_API_KEY}" >> ~/.netrc
           echo "  password ${HEROKU_API_KEY}" >> ~/.netrc
       - name: Pull from Heroku
-        run: git pull heroku master
+        run: git pull heroku master --ff-only
       - name: Push to Heroku
         run: git push heroku master
