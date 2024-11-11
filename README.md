@@ -67,3 +67,9 @@ Note: Keep your .env file secure and avoid sharing it or pushing it to version c
 3. **Security Note**: Including a reminder to keep the `.env` file secure encourages best practices for protecting sensitive information.
 
 This layout ensures that the README remains clean, organized, and informative.
+
+### Docker
+
+## I have implemented docker support for this app.
+
+You can run it with docker app and user localhost:5167 address for emulation production data locally.
