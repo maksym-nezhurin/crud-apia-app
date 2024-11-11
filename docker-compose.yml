@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "5167:5167" # Map host port 3000 to container port 5167
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - NEWS_API_KEY=${NEWS_API_KEY} # Load from .env
+      - NODE_ENV=production # Ensure production environment
+      - PORT=5167
+    command: npm start # Ensure it matches your package.json
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017" # Expose MongoDB on the default port
+    volumes:
+      - mongodb_data:/data/db # Persist MongoDB data
+
+volumes:
+  mongodb_data:
