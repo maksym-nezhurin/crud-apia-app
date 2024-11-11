@@ -33,7 +33,7 @@ app.use(
         origin: '*', // Replace with specific origins if needed
         // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
     })
 );
 app.use(express.json());
