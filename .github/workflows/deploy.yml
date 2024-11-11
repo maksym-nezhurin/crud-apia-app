@@ -37,4 +37,4 @@ jobs:
           git rebase heroku/master || (git rebase --abort && git reset --hard heroku/master)
 
       - name: Push to Heroku
-        run: git push heroku master
+        run: git push heroku master --force
