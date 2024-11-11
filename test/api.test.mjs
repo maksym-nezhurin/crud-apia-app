@@ -2,8 +2,8 @@ import request from 'supertest';
 import {app, closeServer } from '../server.mjs';
 
 describe('API Tests', () => {
-    afterAll(() => {
-        closeServer(); // Stop the server after tests
+    afterAll(async () => {
+        await closeServer(); // Stop the server after tests
     });
 
     it('should return a success message', async () => {

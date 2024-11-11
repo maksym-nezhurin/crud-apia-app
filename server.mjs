@@ -1,12 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
-import http from 'http';
-import { Server } from 'socket.io';
 import dotenv from 'dotenv';
+import { Server } from 'socket.io';
 import { join } from 'path';
-
 import { connectDB, disconnectDB } from './database/connection.mjs';
 import listRoutes from './utils/listRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
@@ -32,6 +31,7 @@ if (!isTestEnv) connectDB(); // Avoid DB connection during tests
 app.use(
     cors({
         origin: '*', // Replace with specific origins if needed
+        // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     })
@@ -55,6 +55,10 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use('/uploads', (req, res) => {
+    res.status(404).send('Image not found');
+});
+
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/articles', articleRoutes);
@@ -72,14 +76,30 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'], // Replace with actual origins
         methods: ['GET', 'POST'],
+        origin: '*', // Replace '*' with specific origins for better security
     },
 });
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-    socket.on('disconnect', () => console.log('A user disconnected'));
+
+    // Handle Socket.IO events here if needed
+
+    // Listen for typing event
+    socket.on('typing', (data) => {
+        socket.broadcast.emit('userTyping', data);
+    });
+
+    // Listen for stop typing event
+    socket.on('stopTyping', (data) => {
+        // Broadcast to all other users except the sender
+        socket.broadcast.emit('userStopTyping', data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
 });
 
 // Start server
@@ -90,7 +110,6 @@ if (!isTestEnv) {
 }
 
 // Exports for testing
-export const closeServer = () => {
-    server.close(() => console.log('Server closed'));
-    disconnectDB(); // Ensure the database connection is terminated
+export const closeServer = async () => {
+    await disconnectDB(); // Ensure the database connection is terminated
 };
