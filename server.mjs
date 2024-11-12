@@ -33,7 +33,7 @@ app.use(
         origin: '*', // Replace with specific origins if needed
         // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'x-auth-token'],
     })
 );
 app.use(express.json());
@@ -50,8 +50,14 @@ if (!isTestEnv) {
 
 // Add IP logger middleware
 app.use((req, res, next) => {
+    req.io = io;
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log(`Client IP: ${clientIp}`);
+
+    res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
+    res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token'); // Include any other headers you need to allow
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
+
     next();
 });
 
