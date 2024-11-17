@@ -1,6 +1,7 @@
 import Article from '../models/Article.mjs';
 import User from '../models/User.mjs';
 import Comment from '../models/Comment.mjs';
+import {roles} from "../constants/auth.mjs";
 
 // CREATE a new article
 export const createArticle = async (req, res) => {
@@ -72,7 +73,7 @@ export const getArticles = async (req, res) => {
         if (req.user && req.user.role === 'super_admin') {
             query = {};  // No filter applied, show all articles including deleted ones
         }
-
+        // console.log('user', user)
         const articles = await Article.find(query).populate('author', 'name email');
         res.status(200).json({
             data: {
@@ -94,11 +95,15 @@ export const getArticleById = async (req, res) => {
             return res.status(404).json({message: 'Article not found'});
         }
 
-        if (article.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
+        if (article.isDeleted && (!req.user || ![roles.SUPER_ADMIN, roles.ADMIN, roles.USER].includes(req.user.role))) {
             return res.status(403).json({message: 'Access denied. Article is deleted.'});
         }
 
-        res.json(article);
+        res.json({
+            data: {
+                article
+            }
+        });
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {

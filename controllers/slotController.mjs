@@ -4,51 +4,64 @@ import Slot from "../models/Slot.mjs";
 
 export const createSlot = async (req, res) => {
     try {
-        const { date, time, timezone, firstName, lastName } = req.body;
+        const { date, time, author, timezone } = req.body;
         const dateTime = `${date} ${time}`;
-        const dateInUTC = moment.tz(dateTime, 'YYYY-MM-DD hh:mm A', timezone).utc().toDate();
+        const dateInUTC = moment.tz(dateTime, 'YYYY-MM-DD hh:mm A', timezone).utc().toDate(); // Example timezone
+        console.log('user', author, dateInUTC)
+        if (!author) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-      const booking = new Booking({
-        date: dateInUTC,
-        firstName,
-        lastName,
-      });
-      await booking.save();
-      res.status(201).json(booking);
+        const slot = new Slot({
+            date: dateInUTC,
+            isBooked: false,
+            author: author // Save the ObjectId of the user
+        });
+
+        const savedSlot = await slot.save();
+        res.status(201).json({
+            data: {
+                slot: savedSlot,
+                message: 'Slot successfully created!'
+            }
+        });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+        res.status(500).json({
+            message: 'Failed to create the slot',
+            error: error.message
+        });
     }
-  };
+};
 
-  export const bookSlot = async (req, res) => {
-    const { slotId, userId, firstName, lastName } = req.body;
+export const bookSlot = async (req, res) => {
+    const {slotId, userId, firstName, lastName} = req.body;
 
-  try {
-    // Check if the slot is still available
-    const slot = await Slot.findOne({ _id: slotId, isBooked: false });
+    try {
+        // Check if the slot is still available
+        const slot = await Slot.findOne({_id: slotId, isBooked: false});
 
-    if (!slot) {
-      return res.status(400).json({ message: 'Slot is already booked or unavailable' });
+        if (!slot) {
+            return res.status(400).json({message: 'Slot is already booked or unavailable'});
+        }
+
+        // Mark the slot as booked
+        slot.isBooked = true;
+        await slot.save();
+
+        // Create a booking record
+        const booking = new Booking({
+            user: userId,
+            slot: slot._id,
+            firstName,
+            lastName,
+        });
+        await booking.save();
+
+        res.status(201).json({message: 'Slot booked successfully', booking});
+    } catch (error) {
+        res.status(500).json({message: 'Error booking slot'});
     }
-
-    // Mark the slot as booked
-    slot.isBooked = true;
-    await slot.save();
-
-    // Create a booking record
-    const booking = new Booking({
-      user: userId,
-      slot: slot._id,
-      firstName,
-      lastName,
-    });
-    await booking.save();
-
-    res.status(201).json({ message: 'Slot booked successfully', booking });
-  } catch (error) {
-    res.status(500).json({ message: 'Error booking slot' });
-  }
-  }
+}
 
 export const getSlots = async (req, res) => {
     try {
@@ -65,7 +78,7 @@ export const getSlots = async (req, res) => {
             
             // Add the time to the array for the given date
             acc[dateKey].push({
-                time: slot.time,
+                time: moment(slot.date).format('hh:mm A'),
                 _id: slot._id,
                 isBooked: slot.isBooked
             });
@@ -82,7 +95,11 @@ export const getSlots = async (req, res) => {
             });
         });
   
-      res.json(slotsByDate);
+      res.json({
+          data: {
+              slots: slotsByDate
+          }
+      });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -90,7 +107,7 @@ export const getSlots = async (req, res) => {
 
 export const getSlotsByDate = async (req, res) => {
     const { date } = req.params;  // Expect date in YYYY-MM-DD format
-    
+
     try {
         // Ensure the date covers the entire day from 00:00:00 to 23:59:59
         const startDate = new Date(date);
@@ -102,13 +119,12 @@ export const getSlotsByDate = async (req, res) => {
             date: { $gte: startDate, $lt: endDate },
         });
 
-
         if (slots.length > 0) {
             res.status(200).json({ data: {
                 slots
             }});
         } else {
-            res.status(404).json({ data: {
+            res.status(200).json({ data: {
                 slots: [],
                 message: 'No slots found for this date'
             } });

@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import {roles} from "../constants/auth.mjs";
 
-const UserRoles = ['user', 'super admin', 'admin', 'guest'];
+// export enum Role
+const UserRoles = Object.values(roles);
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -19,7 +22,7 @@ const UserSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: UserRoles,
-    default: 'user',  // Default role is regular user
+    default: roles.USER,  // Default role is regular user
   },
   createdAt: {
     type: Date,
@@ -31,6 +34,25 @@ const UserSchema = new mongoose.Schema({
   resetCodeExpiration: {
     type: Date
   },
+  refreshtoken: [String],
 }, { timestamps: true });
+
+UserSchema.methods.generateAuthToken = function () {
+  const accesstoken = jwt.sign(
+      { _id: this._id, role: this.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "2h",
+      }
+  );
+  const refreshtoken = jwt.sign(
+      { _id: this._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "1d" }
+  );
+
+  const tokens = { accesstoken: accesstoken, refreshtoken: refreshtoken };
+  return tokens;
+};
 
 export default mongoose.model('User', UserSchema);

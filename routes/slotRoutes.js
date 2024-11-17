@@ -11,7 +11,7 @@ import auth from '../middleware/auth.mjs';  // Assuming you want to protect some
 const router = express.Router();
 
 // Route to create a new article
-router.post('/', createSlot);
+router.post('/', auth, createSlot);
 
 // Route to get all articles (optional filter by status)
 router.get('/', getSlots);
