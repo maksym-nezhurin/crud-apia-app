@@ -2,9 +2,11 @@ import request from 'supertest';
 import { app, closeServer } from '../server.mjs';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import {AUTH_HEADER} from "../constants/auth.mjs";
+import {AUTH_HEADER, roles} from "../constants/auth.mjs";
 
-const PROTECTED_ROUTE = '/api/slots/'
+const PROTECTED_ROUTE = '/api/slots/';
+const USER_ROLE = roles.SUPER_ADMIN;
+
 describe('Authentication API', () => {
     let mongoServer;
     let accessToken, refreshToken;

@@ -18,7 +18,7 @@ const signUp = async (email, password) => {
     newUser.refreshtoken = tokens.refreshtoken;
     await newUser.save();
     const data = {
-        token: tokens,
+        token: tokens.token,
         id: newUser.id,
     };
 
@@ -26,11 +26,12 @@ const signUp = async (email, password) => {
 };
 
 const signIn = async (user, newRefreshTokenArray) => {
-    const token = user.generateAuthToken();
-    user.refreshtoken = [...newRefreshTokenArray, token.refreshtoken];
+    const tokens = user.generateAuthToken();
+    user.refreshtoken = [...newRefreshTokenArray, tokens.refreshtoken];
     await user.save();
     return {
-        token: token,
+        refreshtoken: tokens.refreshtoken,
+        token: tokens.token,
         userId: user.id,
     };
 };

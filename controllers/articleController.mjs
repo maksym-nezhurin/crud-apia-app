@@ -73,8 +73,9 @@ export const getArticles = async (req, res) => {
         if (req.user && req.user.role === 'super_admin') {
             query = {};  // No filter applied, show all articles including deleted ones
         }
-        // console.log('user', user)
+
         const articles = await Article.find(query).populate('author', 'name email');
+
         res.status(200).json({
             data: {
                 articles

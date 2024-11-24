@@ -38,20 +38,39 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 UserSchema.methods.generateAuthToken = function () {
+  const payload = {
+    _id: this._id,
+    role: this.role,
+    iat: Math.floor(Date.now() / 1000), // Current time in seconds
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 // Expire in 1 week
+  };
+
+  const secret = process.env.JWT_SECRET;
+  const secret2 = process.env.JWT_REFRESH_SECRET;
+  const options = {
+    // expiresIn: "2h",
+    algorithm: 'HS256'
+  }
   const accesstoken = jwt.sign(
-      { _id: this._id, role: this.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "2h",
-      }
+      payload,
+      secret,
+      options
   );
   const refreshtoken = jwt.sign(
-      { _id: this._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "1d" }
+      payload,
+      secret2,
+      {
+        algorithm: 'HS256',
+        // expiresIn: "1d"
+      }
   );
+  const tokens = {
+    token: accesstoken,
+    refreshtoken:
+        refreshtoken ||
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzQwY2ZlZjQ2NjA5NjM2MjNkODEzMWQiLCJyb2xlIjoidXNlciIsImlhdCI6MTczMjMwMjQyMSwiZXhwIjoxNzMyOTA3MjIxfQ.fNpULu9tt0kvbei--d7S3DbiqEJNhD0pX5Wg44exZGQ'
+  };
 
-  const tokens = { accesstoken: accesstoken, refreshtoken: refreshtoken };
   return tokens;
 };
 

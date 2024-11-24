@@ -92,7 +92,7 @@ export const loginUser = tryCatch(async (req, res) => {
     }
 
     // Generate a new access token
-    const accessToken = user.generateAuthToken().accesstoken;
+    const { token } = user.generateAuthToken();
 
     // Send tokens to the client with HttpOnly cookie for refresh token
     res.cookie("jwt", refreshToken, {
@@ -102,29 +102,53 @@ export const loginUser = tryCatch(async (req, res) => {
 
     return res.status(200).json({
         data: {
-            accessToken: accessToken,
+            accessToken: token,
             userId: user._id,
-            profilePic: user.profilePic
+            // profilePic: user.profilePic
         }
     });
 });
 
+export const verifyToken = async (req, res) => {
+    const cookies = req.cookies;
+    const token = cookies.jwt;
+
+    if (!(token)) return res.sendStatus(204);
+
+    try {
+        const res = jwt.verify(
+            token,
+
+            process.env.JWT_SECRET,
+            (err, decoded) => {
+                if (err) {
+                    console.error('Token verification failed:', err);
+                } else {
+                    console.log('Decoded payload:', decoded);
+                }
+                return {};
+            }
+        );
+        return res;
+    } catch (error) {
+        return null;
+    }
+}
+
 export const refreshToken = async (req, res) => {
-    // const { refreshToken } = req.body;
     const cookies = req.cookies;
     if (!cookies?.jwt) return res.sendStatus(204);
     const refreshToken = cookies.jwt;
 
-    try {
 
+    try {
         const user = await User.findOne({ refreshtoken: { $in: [refreshToken] } });
+
         if (!user) {
             return res.status(401).json({ message: 'Refresh token is invalid' });
         }
-        // console.log('user', user)
+
         // Verify the refresh token
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        console.log('decoded', decoded)
         const newTokens = user.generateAuthToken();
 
         // Optionally remove the old refresh token and save the new one
