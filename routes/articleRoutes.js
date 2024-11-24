@@ -21,7 +21,7 @@ router.post('/', auth, createArticle);
 router.get('/', getArticles);
 
 // Route to get a single article by ID
-router.get('/:id', getArticleById);
+router.get('/:id', auth, getArticleById);
 
 // Route to update an article by ID
 router.put('/:id', auth, updateArticle);

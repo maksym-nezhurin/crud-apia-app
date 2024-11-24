@@ -5,15 +5,15 @@ import Slot from '../models/Slot.mjs';
 
 export const createBooking = async (req, res) => {
     try {
-        const { slotId, timezone, firstName, lastName } = req.body;
-        const slot = await Slot.findOne({ _id: slotId, isBooked: false });
+        const {slotId, timezone, firstName, lastName} = req.body;
+        const slot = await Slot.findOne({_id: slotId, isBooked: false});
         const dateFromSlot = new Date(slot.date);
 
         // Get YYYY-MM-DD format
         const formattedDate = dateFromSlot.toISOString().slice(0, 10);
 
         if (!slot) {
-            return res.status(400).json({ message: 'Slot is already booked or unavailable' });
+            return res.status(400).json({message: 'Slot is already booked or unavailable'});
         }
 
         // Mark the slot as booked
@@ -30,26 +30,28 @@ export const createBooking = async (req, res) => {
             lastName,
         });
         await booking.save();
-        res.status(201).json({ data: { message: 'Slot booked successfully', booking }});
+        res.status(201).json({data: {message: 'Slot booked successfully', booking}});
     } catch (error) {
-      res.status(500).json({ message: error.message });
+        res.status(500).json({message: error.message});
     }
-  };
+};
 
 export const getBookings = async (req, res) => {
     try {
         const bookings = await Booking.find();
-        res.status(200).json({ data: {
-            bookings
-        }});
+        res.status(200).json({
+            data: {
+                bookings
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({message: error.message});
     }
 };
 
 export const getBookingByDate = async (req, res) => {
-    const { date } = req.params;  // Expect date in YYYY-MM-DD format
-    
+    const {date} = req.params;  // Expect date in YYYY-MM-DD format
+
     try {
         // Ensure the date covers the entire day from 00:00:00 to 23:59:59
         const startDate = new Date(date);
@@ -58,33 +60,58 @@ export const getBookingByDate = async (req, res) => {
         endDate.setUTCHours(23, 59, 59, 999);  // Set end of the day
 
         const bookings = await Booking.find({
-            date: { $gte: startDate, $lt: endDate },
+            date: {$gte: startDate, $lt: endDate},
             // isDeleted: false
         });
 
         if (bookings.length > 0) {
-            res.status(200).json({data: {
-                bookings
-            }});
+            res.status(200).json({
+                data: {
+                    bookings
+                }
+            });
         } else {
-            res.status(200).json({data: { bookings: [], message: 'No bookings found for this date' }});
+            res.status(200).json({data: {bookings: [], message: 'No bookings found for this date'}});
         }
     } catch (error) {
-        res.status(500).json({ data: {
-            message: error.message
-        } });
+        res.status(500).json({
+            data: {
+                message: error.message
+            }
+        });
     }
 };
 
 export const updateBooking = async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
     try {
-        const booking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
-        res.status(200).json(booking);
+        const booking = await Booking.findByIdAndUpdate(id, req.body, {new: true});
+        res.status(200).json({
+            data: {
+                booking
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({message: error.message});
     }
 };
+
+export const getBookingById = async (req, res) => {
+    const {id} = req.params;
+    console.log('getBookingById', id)
+    try {
+        const booking = await Booking.findById(id, req.body, {new: true});
+        console.log('booking', booking);
+
+        res.status(200).json({
+            data: {
+                booking
+            }
+        })
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+}
 
 export const deleteBooking = async (req, res) => {
     const { id } = req.params;
@@ -92,9 +119,11 @@ export const deleteBooking = async (req, res) => {
     try {
         // Find the booking by ID
         const booking = await Booking.findById(id);
-        
+
         if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' });
+            return res.status(404).json({data: {
+                    message: 'Booking not found'
+                }});
         }
 
         // Mark the booking as deleted
@@ -109,9 +138,11 @@ export const deleteBooking = async (req, res) => {
             await slot.save();
         }
 
-        res.status(200).json({ message: 'Booking deleted successfully', booking });
+        res.status(200).json({
+            data: {message: 'Booking deleted successfully', booking}
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({message: error.message});
     }
 };
 

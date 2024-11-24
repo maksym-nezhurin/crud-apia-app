@@ -3,6 +3,7 @@ import cors from 'cors';
 import http from 'http';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { join } from 'path';
@@ -16,6 +17,8 @@ import slotRoutes from './routes/slotRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productsRoutes from './routes/productsRoutes.js';
 import { getLatestNews } from './controllers/newsController.mjs';
+import {AUTH_HEADER} from "./constants/auth.mjs";
+
 
 dotenv.config();
 
@@ -27,17 +30,21 @@ export const app = express();
 // Connect to DB
 if (!isTestEnv) connectDB(); // Avoid DB connection during tests
 
+const corsOptions = {
+    // origin: '*', // Replace with specific origins if needed
+    origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', AUTH_HEADER],
+    credentials: true, // This is critical for cookies to be sent and received when the server and client are on different origins.
+};
+
 // Middleware setup
 app.use(
-    cors({
-        origin: '*', // Replace with specific origins if needed
-        // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'x-auth-token'],
-    })
+    cors(corsOptions)
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
@@ -51,12 +58,11 @@ if (!isTestEnv) {
 // Add IP logger middleware
 app.use((req, res, next) => {
     req.io = io;
-    const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log(`Client IP: ${clientIp}`);
+    // const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-    res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
-    res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token'); // Include any other headers you need to allow
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
+    // res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
+    // res.header(`'Access-Control-Allow-Headers', 'Content-Type, ${AUTH_HEADER}'`); // Include any other headers you need to allow
+    // // res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
 
     next();
 });
