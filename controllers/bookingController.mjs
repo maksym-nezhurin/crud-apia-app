@@ -47,6 +47,31 @@ export const getBookings = async (req, res) => {
     }
 };
 
+export const getBookingById = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id).populate('slot', 'name date firstName lastName createdAt');
+
+        if (!booking) {
+            return res.status(404).json({message: 'Booking not found'});
+        }
+
+        if (booking.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
+            return res.status(403).json({message: 'Access denied. Booking is deleted.'});
+        }
+
+        res.json({
+            data: {
+                booking
+            }
+        });
+    } catch (err) {
+        if (err.kind === 'ObjectId') {
+            return res.status(404).json({message: 'Booking not found'});
+        }
+        res.status(500).send('Server error');
+    }
+};
+
 export const getBookingByDate = async (req, res) => {
     const { date } = req.params;  // Expect date in YYYY-MM-DD format
     

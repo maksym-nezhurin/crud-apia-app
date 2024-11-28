@@ -16,6 +16,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: String,
   role: {
     type: String,
     enum: UserRoles,

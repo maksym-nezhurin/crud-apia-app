@@ -25,7 +25,9 @@ const isTestEnv = process.env.NODE_ENV === 'test';
 export const app = express();
 
 // Connect to DB
-if (!isTestEnv) connectDB(); // Avoid DB connection during tests
+if (!isTestEnv) {
+    connectDB().then(); // Avoid DB connection during tests
+}
 
 // Middleware setup
 app.use(
@@ -33,7 +35,7 @@ app.use(
         origin: '*', // Replace with specific origins if needed
         // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'x-auth-token'],
+        allowedHeaders: ['Content-Type', 'x-auth-token', 'Authorization'],
     })
 );
 app.use(express.json());
@@ -54,9 +56,9 @@ app.use((req, res, next) => {
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log(`Client IP: ${clientIp}`);
 
-    res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
-    res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token'); // Include any other headers you need to allow
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
+    // res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
+    // res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token'); // Include any other headers you need to allow
+    // res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
 
     next();
 });
@@ -88,14 +90,13 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    // Handle Socket.IO events here if needed
-
     // Listen for typing event
     socket.on('typing', (data) => {
         socket.broadcast.emit('userTyping', data);
     });
+
+    // Notify client of successful 2FA setup
+    // socket.emit("2fa-setup", { message: "2FA setup complete!" });
 
     // Listen for stop typing event
     socket.on('stopTyping', (data) => {
