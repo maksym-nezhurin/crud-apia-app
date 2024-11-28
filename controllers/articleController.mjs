@@ -21,9 +21,6 @@ export const createArticle = async (req, res) => {
         });
 
         await newArticle.save();
-
-        // req.io.emit(ARTICLE_CREATED, req.params.id);
-
         res.status(201).json({
             data: {
                 article: newArticle,
@@ -76,8 +73,7 @@ export const getArticles = async (req, res) => {
         }
 
         const articles = await Article.find(query).populate('author', 'name email');
-
-        res.json({
+        res.status(200).json({
             data: {
                 articles
             }
@@ -101,11 +97,7 @@ export const getArticleById = async (req, res) => {
             return res.status(403).json({message: 'Access denied. Article is deleted.'});
         }
 
-        res.json({
-            data: {
-                article
-            }
-        });
+        res.json(article);
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
@@ -142,8 +134,8 @@ export const updateArticle = async (req, res) => {
             {$set: updatedFields},
             {new: true}
         );
-        // req.io.emit(ARTICLE_UPDATED, req.params.id);
-        res.json(article);
+
+        res.status(201).json({data: {article, message: 'Successfully updated!'}});
     } catch (err) {
         if (err.kind === 'ObjectId') {
             return res.status(404).json({message: 'Article not found'});
@@ -172,10 +164,11 @@ export const deleteArticle = async (req, res) => {
         article.deletedAt = new Date();  // Store the current timestamp for when the deletion happened
 
         await article.save();  // Save the soft deletion information
-        // req.io.emit(ARTICLE_DELETED, req.params.id);
 
-        res.json({
-            data: {message: 'Article marked as deleted'}
+        res.status(200).json({
+            data: {
+                message: 'Article marked as deleted'
+            }
         });
     } catch (err) {
         console.error(err.message);
@@ -209,7 +202,8 @@ export const getAllComments = async (req, res) => {
 
         res.status(200).send({
             data: {
-                comments
+                comments,
+                message: ''
             }
         });
     } catch (error) {
