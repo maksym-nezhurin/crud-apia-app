@@ -147,16 +147,15 @@ export const getUserDetails = async (req, res) => {
 };
 
 export const logoutUser = async (req, res) => {
-    const {refreshToken} = req.body;
-
+    const existingUser = await User.findById(req.user.userId);
     // Check if refreshToken is provided
-    if (!refreshToken) {
-        return res.status(400).json({message: 'Refresh token is required for logout!'});
+    if (!existingUser) {
+        return res.status(400).json({message: 'user should be logged, it is required for logout!'});
     }
 
     // Delete the refresh token from the database
-    const token = await RefreshToken.findOneAndDelete({token: refreshToken});
-
+    const token = await RefreshToken.findOneAndDelete({userId: req.user.userId});
+    console.log('token', token)
     if (!token) {
         return res.status(400).json({message: 'Provided refresh token is not exist!'});
     }

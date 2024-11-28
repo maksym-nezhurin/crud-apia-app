@@ -98,7 +98,11 @@ export const getArticleById = async (req, res) => {
             return res.status(403).json({message: 'Access denied. Article is deleted.'});
         }
 
-        res.json(article);
+        res.json({
+            data: {
+                article
+            }
+        });
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
