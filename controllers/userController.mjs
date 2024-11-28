@@ -3,6 +3,8 @@ import RefreshToken from '../models/RefreshToken.mjs';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
+import speakeasy from "speakeasy";
+import qrcode from "qrcode";
 
 const TOKEN_TIME = '1h'; // token expires in
 const REFRESH_TOKEN_TIME = '7d'; // Refresh token expires in 7 days
@@ -89,9 +91,11 @@ export const loginUser = async (req, res) => {
 
         // Send tokens to the client
         res.json({
-            accessToken,
-            refreshToken,
-            userId: user._id
+            data: {
+                accessToken,
+                refreshToken,
+                userId: user._id
+            }
         });
     } catch (error) {
         console.error(error.message);
@@ -285,3 +289,58 @@ export const verifyResetCode = async (req, res) => {
         res.status(500).json({ message: 'Could not process request' });
     }
 };
+
+export const setup2FA = async (req, res) => {
+    console.log('setup2FA')
+    const secret = speakeasy.generateSecret({ name: "Super Piper App" });
+    //
+    // console.log('secret', secret)
+    //
+    qrcode.toDataURL(secret.otpauth_url, (err, dataUrl) => {
+        return res.json({
+            data: { secret: secret.base32, qrCode: dataUrl }
+        });
+    });
+}
+
+export const sendOPT2FA = async (req, res) => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.sendgrid.net',
+        port: 587,
+        auth: {
+            user: 'apikey', // В SendGrid це завжди "apikey"
+            pass: process.env.SENDGRID_API_KEY, // використовуйте API Key з .env
+        },
+    });
+
+    await transporter.sendMail({
+        from: process.env.EMAIL,
+        to: req.body.email,
+        subject: 'Your OTP Code',
+        text: `Your OTP code is ${otp}`,
+    });
+
+    res.json({ otp });
+}
+
+export const verify2FA = async (req, res) => {
+    const { token, secret } = req.body;
+
+    const verified = speakeasy.totp.verify({
+        secret,
+        encoding: 'base32',
+        token,
+    });
+
+    if (verified) {
+        res.status(200).send({
+            data: { success: true, message: "2FA Verified" }
+        });
+    } else {
+        res.status(200).send({
+            data: { success: false, message: "Invalid OTP" }
+        });
+    }
+}
+

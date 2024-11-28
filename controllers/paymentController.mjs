@@ -1,5 +1,12 @@
 import Stripe from 'stripe';
-const stripe = Stripe('pk_test_51QID7gKXpmxOoBq6YPZ1233Otn3dvNk33RstTnqbWlKhO9dritCeeaeLPqnGRvRbeCBw0VGTDrFRNiE2pCsb2cpN00ij8zwPQg');
+import Joi from 'joi'; // Install with npm install joi
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-11-20.acacia' });
+
+const paymentSchema = Joi.object({
+    paymentMethodId: Joi.string().required(),
+    amount: Joi.number().positive().required(),
+});
 
 export const checkoutUserData = async (req, res) => {
     console.log('Checkout User Data');
@@ -14,20 +21,25 @@ export const checkoutUserData = async (req, res) => {
 }
 
 export const createPayment = async (req, res) => {
-    console.log('createPayment')
-    const { paymentMethodId, amount } = req.body;
+    const { error, value } = paymentSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
+    const { paymentMethodId, amount } = value;
 
     try {
-        console.log('paymentMethodId, amount', amount)
-        res.json({ clientSecret: '12121212'});
-        // const paymentIntent = await stripe.paymentIntents.create({
-        //     amount: amount * 100, // Convert dollars to cents
-        //     currency: 'usd',
-        //     payment_method: paymentMethodId,
-        //     confirmation_method: 'manual',
-        //     confirm: true,
-        // });
-        // res.json({ clientSecret: paymentIntent.client_secret });
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount, // Convert dollars to cents
+            currency: 'pln',
+            payment_method: paymentMethodId,
+            // confirmation_method: 'manual',
+            automatic_payment_methods: {
+                enabled: true,
+                allow_redirects: 'never',
+            },
+            // confirm: true,
+        });
+        res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
         console.error('Error creating payment intent:', error);
         res.status(500).json({ error: error.message });

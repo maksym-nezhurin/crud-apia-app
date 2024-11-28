@@ -9,7 +9,7 @@ const CommentSchema = new mongoose.Schema({
   content: {
     type: String,
     required: true,
-    minlength: 20,
+    minlength: 10,
   
   },
   user: {

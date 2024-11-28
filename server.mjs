@@ -25,7 +25,9 @@ const isTestEnv = process.env.NODE_ENV === 'test';
 export const app = express();
 
 // Connect to DB
-if (!isTestEnv) connectDB(); // Avoid DB connection during tests
+if (!isTestEnv) {
+    connectDB().then(); // Avoid DB connection during tests
+}
 
 // Middleware setup
 app.use(
@@ -33,7 +35,7 @@ app.use(
         origin: '*', // Replace with specific origins if needed
         // origin: ['http://localhost:5173', 'https://maksym-nezhurin.github.io'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        // allowedHeaders: ['Content-Type', 'Authorization'],
     })
 );
 app.use(express.json());
@@ -82,14 +84,13 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    // Handle Socket.IO events here if needed
-
     // Listen for typing event
     socket.on('typing', (data) => {
         socket.broadcast.emit('userTyping', data);
     });
+
+    // Notify client of successful 2FA setup
+    // socket.emit("2fa-setup", { message: "2FA setup complete!" });
 
     // Listen for stop typing event
     socket.on('stopTyping', (data) => {

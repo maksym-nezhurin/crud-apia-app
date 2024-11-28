@@ -21,10 +21,9 @@ export default async function seedSlots() {
   // Clear existing data in the Slot collection
   await Slot.deleteMany({});
   await Booking.deleteMany({});
-  console.log('Existing slot data cleared.');
 
   // Seed new data
-  await createSlotsForDate(new Date('2024-11-05'), [
+  await createSlotsForDate(new Date('2024-12-05'), [
     {
       time: "12:00 PM",
       _id: "6724d33c0b03f4fb222dc26f",
@@ -41,7 +40,7 @@ export default async function seedSlots() {
       isBooked: false
   }
   ]);
-  await createSlotsForDate(new Date('2024-11-06'), [
+  await createSlotsForDate(new Date('2024-12-06'), [
     {
       time: "08:00 AM",
       _id: "6724d33c0b03f4fb222dc22f",
@@ -58,7 +57,7 @@ export default async function seedSlots() {
         isBooked: false
     }
   ]);
-  await createSlotsForDate(new Date('2024-11-08'), [
+  await createSlotsForDate(new Date('2024-12-08'), [
     {
       time: "05:00 AM",
       _id: "6724d33c0b03f4fb222dc32f",

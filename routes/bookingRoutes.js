@@ -3,7 +3,7 @@ import express from 'express';
 import {
   createBooking,
   getBookings,
-  // getBookingById,
+  getBookingById,
   updateBooking,
   getBookingByDate,
   deleteBooking
@@ -19,6 +19,8 @@ router.post('/', createBooking);
 router.get('/', getBookings);
 
 router.get('/:date', getBookingByDate);
+
+router.get('/item/:id', getBookingById);
 
 router.delete('/:id', deleteBooking)
 
