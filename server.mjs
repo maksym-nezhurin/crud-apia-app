@@ -56,9 +56,9 @@ app.use((req, res, next) => {
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log(`Client IP: ${clientIp}`);
 
-    res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
-    res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token'); // Include any other headers you need to allow
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
+    // res.header('Access-Control-Allow-Origin', 'https://localhost:5173'); // or '*' for all origins
+    // res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token'); // Include any other headers you need to allow
+    // res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Adjust methods according to your needs
 
     next();
 });

@@ -1,6 +1,7 @@
 import Article from '../models/Article.mjs';
 import User from '../models/User.mjs';
 import Comment from '../models/Comment.mjs';
+import {ARTICLE_CREATED, ARTICLE_DELETED, COMMENT_CREATED} from "../constants/socket.mjs";
 
 export const createArticle = async (req, res) => {
     const {title, content, tags, status = 'draft'} = req.body;
@@ -52,7 +53,7 @@ export const updateArticleStatus = async (req, res) => {
         // Update the status
         article.status = status;
         await article.save();  // Save the updated article
-
+        req.io.emit(ARTICLE_CREATED, article);
         res.json(article);  // Respond with the updated article
     } catch (err) {
         if (err.kind === 'ObjectId') {
@@ -164,7 +165,7 @@ export const deleteArticle = async (req, res) => {
         article.deletedAt = new Date();  // Store the current timestamp for when the deletion happened
 
         await article.save();  // Save the soft deletion information
-
+        req.io.emit(ARTICLE_DELETED, req.params.id);
         res.status(200).json({
             data: {
                 message: 'Article marked as deleted'
@@ -235,7 +236,7 @@ export const commentArticle = async (req, res) => {
         await article.save();
 
         // Emit the comment to all clients via Socket.IO
-        // req.io.emit(COMMENT_CREATED, newComment);
+        req.io.emit(COMMENT_CREATED, newComment);
 
         res.status(201).send({
             data: {
