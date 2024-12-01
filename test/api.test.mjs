@@ -14,6 +14,14 @@ jest.mock("newsapi", () => {
     }));
 });
 
+jest.mock('stripe', () => {
+    return jest.fn().mockImplementation(() => ({
+        charges: {
+            create: jest.fn(() => Promise.resolve({ id: 'test_charge_id' })),
+        },
+    }));
+});
+
 describe('API Tests', () => {
     afterAll(async () => {
         await closeServer(); // Stop the server after tests
