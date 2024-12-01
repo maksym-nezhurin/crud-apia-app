@@ -1,13 +1,13 @@
 import request from 'supertest';
-import {app, closeServer } from '../server.mjs';
+import {app, closeServer} from '../server.mjs';
 
 jest.mock("newsapi", () => {
     return jest.fn().mockImplementation(() => ({
         v2: {
             topHeadlines: jest.fn().mockResolvedValue({
                 articles: [
-                    { title: "Mocked News 1", description: "Mocked Description 1" },
-                    { title: "Mocked News 2", description: "Mocked Description 2" },
+                    {title: "Mocked News 1", description: "Mocked Description 1"},
+                    {title: "Mocked News 2", description: "Mocked Description 2"},
                 ],
             }),
         },
@@ -17,7 +17,7 @@ jest.mock("newsapi", () => {
 jest.mock('stripe', () => {
     return jest.fn().mockImplementation(() => ({
         charges: {
-            create: jest.fn(() => Promise.resolve({ id: 'test_charge_id' })),
+            create: jest.fn(() => Promise.resolve({id: 'test_charge_id'})),
         },
     }));
 });
@@ -42,7 +42,7 @@ describe('API Tests', () => {
             .expect(200)
             .expect('Content-Type', /json/);
 
-        expect(response.body).toEqual( [
+        expect(response.body).toEqual([
             {"method": "POST", "path": "/api/users/register"},
             {"method": "POST", "path": "/api/users/login"},
             {"method": "POST", "path": "/api/users/logout"},
@@ -72,6 +72,8 @@ describe('API Tests', () => {
             {"method": "GET", "path": "/api/slots/"},
             {"method": "GET", "path": "/api/slots/:date"},
             {"method": "PUT", "path": "/api/slots/:id"},
+            {"method": "GET", "path": "/api/ai/availability"},
+            {"method": "GET", "path": "/api/ai/images"},
             {"method": "POST", "path": "/api/ai/generate-image"},
             {"method": "POST", "path": "/api/products/"},
             {"method": "GET", "path": "/api/products/"},
